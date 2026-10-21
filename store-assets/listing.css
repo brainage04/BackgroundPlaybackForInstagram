@@ -18,9 +18,7 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 20% 10%, rgb(225 29 116 / 35%), transparent 38%),
-    linear-gradient(145deg, #12071f, #1e1028 60%, #3b0764);
+  background: linear-gradient(145deg, #12071f, #1e1028 60%, #3b0764);
   color: #f8fafc;
 }
 
