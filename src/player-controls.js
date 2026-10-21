@@ -470,9 +470,6 @@
     }
   }
 
-  // Instagram's own "selected" quality is not a reliable record of what the user picked,
-  // so the menu shows the choice made here, per video, and Auto otherwise.
-  const chosenQualities = new WeakMap();
   const mediaSources = window[Symbol.for("instagram-background-playback.mediaSources")];
 
   function selectQuality(quality) {
@@ -481,7 +478,6 @@
       return;
     }
     controller.selectVideoQuality(quality);
-    chosenQualities.set(video, quality);
     dropBufferedVideo(video);
   }
 
@@ -740,7 +736,10 @@
       closeMenu();
       return;
     }
-    const selected = chosenQualities.get(video) || "auto";
+    // Instagram reports "notselected" until a quality is first chosen; that is Auto too.
+    const selected = state.availableVideoQualities.includes(state.selectedVideoQuality)
+      ? state.selectedVideoQuality
+      : "auto";
     const current = state.currentVideoQuality;
     const key = `${menuView}|${selected}|${current}|${state.availableVideoQualities.join()}`;
     if (menu.dataset.key === key) {
