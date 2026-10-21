@@ -12,7 +12,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.instagram.com/*"],
-      "js": ["src/keep-visible.js"],
+      "js": ["src/keep-visible.js", "src/media-source-registry.js"],
       "run_at": "document_start",
       "world": "MAIN"
     },

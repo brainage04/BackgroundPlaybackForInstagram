@@ -1,12 +1,12 @@
-// X-style controls for Instagram videos: a seek line, play/pause, time, volume,
-// picture-in-picture and fullscreen, plus sound on by default.
+// X-style controls for Instagram videos: a seek line, play/pause, time, volume, video
+// quality, picture-in-picture and fullscreen, plus sound on by default.
 //
 // Instagram's overlays sit on top of its <video> elements, so the controls live outside
 // Instagram's DOM in a closed shadow root laid over whichever video the pointer is on.
 // Runs in Instagram's page world so it can drive Instagram's own player controller
-// (found through React's fiber tree); that keeps Instagram's play, seek and mute state in
-// step with the controls. When no controller is found, the controls fall back to the
-// <video> element itself.
+// (found through React's fiber tree); that keeps Instagram's mute, volume and quality
+// state in step with the controls and is the only way to pick a video quality. When no
+// controller is found, the controls fall back to the <video> element itself.
 (() => {
   "use strict";
 
@@ -22,11 +22,15 @@
       '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15 9a4.2 4.2 0 0 1 0 6M17.5 6.5a7.8 7.8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
     muted:
       '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9.5l5 5M20.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    settings:
+      '<path d="M18.65 9.24L19.02 10.38L21.48 10.5L21.48 13.5L19.02 13.62L18.65 14.76L18.11 15.82L19.77 17.64L17.64 19.77L15.82 18.11L14.76 18.65L13.62 19.02L13.5 21.48L10.5 21.48L10.38 19.02L9.24 18.65L8.18 18.11L6.36 19.77L4.23 17.64L5.89 15.82L5.35 14.76L4.98 13.62L2.52 13.5L2.52 10.5L4.98 10.38L5.35 9.24L5.89 8.18L4.23 6.36L6.36 4.23L8.18 5.89L9.24 5.35L10.38 4.98L10.5 2.52L13.5 2.52L13.62 4.98L14.76 5.35L15.82 5.89L17.64 4.23L19.77 6.36L18.11 8.18ZM12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
     pip: '<path d="M10 4.5H5.5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M13 4.5h6.5V11M19.5 4.5 13 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="11.5" y="12.5" width="6" height="4.5" rx=".6"/>',
     fullscreen:
       '<path d="M4.5 9.5v-5h5M14.5 4.5h5v5M19.5 14.5v5h-5M9.5 19.5h-5v-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>',
     exitFullscreen:
-      '<path d="M9.5 4.5v5h-5M19.5 9.5h-5v-5M14.5 19.5v-5h5M4.5 14.5h5v5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>'
+      '<path d="M9.5 4.5v5h-5M19.5 9.5h-5v-5M14.5 19.5v-5h5M4.5 14.5h5v5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>',
+    back: '<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+    bars: '<path d="M6 19v-6M10 19V9M14 19V5M18 19v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
   };
   const icon = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 
@@ -196,10 +200,65 @@
         border-radius: 50%;
         background: #fff;
       }
+      .menu {
+        position: absolute;
+        right: 8px;
+        bottom: 64px;
+        display: none;
+        min-width: 220px;
+        max-width: calc(100% - 16px);
+        overflow: hidden;
+        border-radius: 14px;
+        background: rgb(24 24 24 / 96%);
+        box-shadow: 0 8px 28px rgb(0 0 0 / 45%);
+        color: #fff;
+        font: 500 15px/1.2 system-ui, sans-serif;
+        pointer-events: auto;
+      }
+      .menu.open {
+        display: block;
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        height: auto;
+        padding: 14px 18px;
+        border-radius: 0;
+        font: inherit;
+        text-align: left;
+      }
+      .menu-item svg {
+        flex: none;
+      }
+      .menu-item .muted-text {
+        color: rgb(255 255 255 / 60%);
+      }
+      .menu-head {
+        border-bottom: 1px solid rgb(255 255 255 / 12%);
+        font-weight: 700;
+      }
+      .radio {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        margin-left: auto;
+        border: 2px solid rgb(255 255 255 / 55%);
+        border-radius: 50%;
+      }
+      .checked .radio {
+        border: 0;
+        background:
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+            center / 20px no-repeat,
+          #1d9bf0;
+      }
       [hidden] {
         display: none !important;
       }
     </style>
+    <div class="menu" role="menu"></div>
     <div class="chrome">
       <div class="progress" role="slider" aria-label="Seek">
         <div class="rail"></div>
@@ -220,8 +279,9 @@
           </div>
           <button class="mute"></button>
         </div>
-        <button class="pip" title="Picture-in-Picture" data-priority="2">${icon("pip")}</button>
-        <button class="fullscreen" data-priority="3"></button>
+        <button class="settings" title="Settings" data-priority="2">${icon("settings")}</button>
+        <button class="pip" title="Picture-in-Picture" data-priority="3">${icon("pip")}</button>
+        <button class="fullscreen" data-priority="4"></button>
       </div>
     </div>`;
 
@@ -239,8 +299,10 @@
   const volumeLevel = $(".volume-level");
   const volumeThumb = $(".volume-thumb");
   const muteButton = $(".mute");
+  const settingsButton = $(".settings");
   const pipButton = $(".pip");
   const fullscreenButton = $(".fullscreen");
+  const menu = $(".menu");
   const droppable = [...row.querySelectorAll("[data-priority]")]
     .filter((element) => element.dataset.priority !== "0")
     .sort((a, b) => a.dataset.priority - b.dataset.priority);
@@ -251,6 +313,7 @@
   let scrubbing = false;
   let adjustingVolume = false;
   let overControls = false;
+  let menuView = null;
   let fitKey = "";
   let lastCornerScan = 0;
   let userMuted = false;
@@ -405,6 +468,63 @@
       volumeReverts.push(now);
       target.volume = chosenVolume;
     }
+  }
+
+  // Instagram's own "selected" quality is not a reliable record of what the user picked,
+  // so the menu shows the choice made here, per video, and Auto otherwise.
+  const chosenQualities = new WeakMap();
+  const mediaSources = window[Symbol.for("instagram-background-playback.mediaSources")];
+
+  function selectQuality(quality) {
+    const controller = controllerFor(video);
+    if (!controller) {
+      return;
+    }
+    controller.selectVideoQuality(quality);
+    chosenQualities.set(video, quality);
+    dropBufferedVideo(video);
+  }
+
+  // Instagram only fetches the new quality for parts of the video it has not buffered
+  // yet, so drop everything buffered except the half second being played; Instagram then
+  // refetches it at the new quality. Each removal waits until Instagram is not appending.
+  async function dropBufferedVideo(target) {
+    const { source, buffers } = mediaSources ? mediaSources.videoBuffersFor(target) : {};
+    if (!source || source.readyState !== "open") {
+      return;
+    }
+    const now = target.currentTime;
+    const end = Number.isFinite(source.duration) ? source.duration : duration(target);
+    const ranges = [
+      [0, now - 0.1],
+      [now + 0.5, end]
+    ].filter(([start, stop]) => stop - start > 0.05);
+    for (const sourceBuffer of buffers) {
+      if (![...source.sourceBuffers].includes(sourceBuffer)) {
+        continue;
+      }
+      for (const [start, stop] of ranges) {
+        await removeBuffered(sourceBuffer, Math.max(start, 0), stop);
+      }
+    }
+  }
+
+  function removeBuffered(sourceBuffer, start, stop) {
+    return new Promise((resolve) => {
+      const remove = () => {
+        try {
+          sourceBuffer.addEventListener("updateend", resolve, { once: true });
+          sourceBuffer.remove(start, stop);
+        } catch {
+          resolve();
+        }
+      };
+      if (sourceBuffer.updating) {
+        sourceBuffer.addEventListener("updateend", () => setTimeout(remove), { once: true });
+      } else {
+        remove();
+      }
+    });
   }
 
   async function togglePictureInPicture() {
@@ -589,13 +709,18 @@
       fullscreen ? "Exit full screen" : "Full screen"
     );
     pipButton.hidden = !document.pictureInPictureEnabled || video.disablePictureInPicture;
+    const qualities = playerState(video)?.availableVideoQualities || [];
+    settingsButton.hidden = qualities.length < 2;
+    if (menuView) {
+      renderMenu();
+    }
     fit();
   }
 
-  // On narrow videos, drop the time, then picture-in-picture and fullscreen rather than
-  // let the row overflow. Re-measured only when the width or label changes.
+  // On narrow videos, drop the time, then settings, picture-in-picture and fullscreen
+  // rather than let the row overflow. Re-measured only when the width or label changes.
   function fit() {
-    const key = `${host.style.width}|${time.textContent.length}|${pipButton.hidden}`;
+    const key = `${host.style.width}|${time.textContent.length}|${settingsButton.hidden}|${pipButton.hidden}`;
     if (key === fitKey) {
       return;
     }
@@ -607,6 +732,47 @@
       }
       element.style.display = "none";
     }
+  }
+
+  function renderMenu() {
+    const state = playerState(video);
+    if (!state) {
+      closeMenu();
+      return;
+    }
+    const selected = chosenQualities.get(video) || "auto";
+    const current = state.currentVideoQuality;
+    const key = `${menuView}|${selected}|${current}|${state.availableVideoQualities.join()}`;
+    if (menu.dataset.key === key) {
+      return;
+    }
+    menu.dataset.key = key;
+    if (menuView === "main") {
+      const label = selected === "auto" ? `Auto${current ? ` (${current})` : ""}` : selected;
+      menu.innerHTML = `<button class="menu-item" data-view="quality">${icon("bars")}<span>Video quality <span class="muted-text">· ${label}</span></span></button>`;
+    } else {
+      const options = ["auto", ...state.availableVideoQualities];
+      menu.innerHTML =
+        `<button class="menu-item menu-head" data-view="main">${icon("back")}<span>Video quality</span></button>` +
+        options
+          .map(
+            (quality) =>
+              `<button class="menu-item${quality === selected ? " checked" : ""}" data-quality="${quality}"><span>${quality === "auto" ? "Auto" : quality}</span><span class="radio"></span></button>`
+          )
+          .join("");
+    }
+  }
+
+  function openMenu(view) {
+    menuView = view;
+    menu.dataset.key = "";
+    menu.classList.add("open");
+    renderMenu();
+  }
+
+  function closeMenu() {
+    menuView = null;
+    menu.classList.remove("open");
   }
 
   // ---- Placement and visibility ------------------------------------------------------
@@ -669,6 +835,7 @@
 
   function show(target) {
     if (target !== video) {
+      closeMenu();
       restoreCornerButtons();
       video = target;
       fitKey = "";
@@ -691,6 +858,7 @@
     host.style.display = "none";
     cancelAnimationFrame(frame);
     frame = 0;
+    closeMenu();
     restoreCornerButtons();
     video = null;
   }
@@ -698,7 +866,7 @@
   function scheduleHide() {
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
-      if (scrubbing || adjustingVolume || overControls) {
+      if (scrubbing || adjustingVolume || overControls || menuView) {
         scheduleHide();
         return;
       }
@@ -749,6 +917,24 @@
     host.addEventListener(type, (event) => event.stopPropagation());
   }
 
+  // Clicking anywhere outside the open menu closes it. Clicks inside the controls are
+  // checked within the shadow root, where the path shows which control was hit.
+  window.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (menuView && !event.composedPath().includes(host)) {
+        closeMenu();
+      }
+    },
+    true
+  );
+  root.addEventListener("pointerdown", (event) => {
+    const path = event.composedPath();
+    if (menuView && !path.includes(menu) && !path.includes(settingsButton)) {
+      closeMenu();
+    }
+  });
+
   // ---- Control wiring ----------------------------------------------------------------
 
   playButton.addEventListener("click", togglePlay);
@@ -760,8 +946,24 @@
     setMuted(video, !unmute);
     userMuted = !unmute;
   });
+  settingsButton.addEventListener("click", () => (menuView ? closeMenu() : openMenu("main")));
   pipButton.addEventListener("click", togglePictureInPicture);
   fullscreenButton.addEventListener("click", toggleFullscreen);
+
+  menu.addEventListener("click", (event) => {
+    const item = event
+      .composedPath()
+      .find((node) => node instanceof Element && node.classList.contains("menu-item"));
+    if (!item) {
+      return;
+    }
+    if (item.dataset.view) {
+      openMenu(item.dataset.view);
+    } else if (item.dataset.quality) {
+      selectQuality(item.dataset.quality);
+      closeMenu();
+    }
+  });
 
   function seekToPointer(event) {
     const rect = progress.getBoundingClientRect();
