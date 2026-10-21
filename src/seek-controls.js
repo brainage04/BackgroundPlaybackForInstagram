@@ -9,6 +9,7 @@
   const MIN_VIDEO_WIDTH = 160;
   const BAR_HEIGHT = 36;
   const BAR_INSET = 8;
+  const MIN_TRACK_WIDTH = 48;
   // Instagram puts its mute and tagged-people buttons in the bottom 44 px of a video, and
   // the mute button opens a volume slider upwards along the right edge. Keep clear of both.
   const BAR_BOTTOM_GAP = 52;
@@ -51,6 +52,7 @@
       .track {
         position: relative;
         flex: 1;
+        min-width: 0;
         height: 24px;
         cursor: pointer;
         touch-action: none;
@@ -87,6 +89,10 @@
         flex: none;
         font-variant-numeric: tabular-nums;
       }
+      .no-time .time,
+      .no-buttons button {
+        display: none;
+      }
     </style>
     <div class="bar">
       <button class="back" title="Back ${SKIP_SECONDS} seconds">−${SKIP_SECONDS}</button>
@@ -100,6 +106,7 @@
       <span class="time"></span>
     </div>`;
 
+  const bar = root.querySelector(".bar");
   const track = root.querySelector(".track");
   const buffered = root.querySelector(".buffered");
   const played = root.querySelector(".played");
@@ -111,6 +118,7 @@
   let frame = 0;
   let dragging = false;
   let overBar = false;
+  let fitKey = "";
 
   function duration() {
     if (Number.isFinite(video.duration)) {
@@ -150,6 +158,25 @@
     thumb.style.left = `${fraction * 100}%`;
     buffered.style.width = `${end > 0 ? Math.min(bufferedEnd / end, 1) * 100 : 0}%`;
     time.textContent = `${formatTime(current)} / ${formatTime(end)}`;
+    fit();
+  }
+
+  // On narrow videos, drop the time label and then the skip buttons rather than let the
+  // track shrink below a usable width. Only re-measured when the bar's width or the
+  // label's length changes.
+  function fit() {
+    const key = `${host.style.width}|${time.textContent.length}`;
+    if (key === fitKey) {
+      return;
+    }
+    fitKey = key;
+    bar.classList.remove("no-time", "no-buttons");
+    if (track.clientWidth < MIN_TRACK_WIDTH) {
+      bar.classList.add("no-time");
+    }
+    if (track.clientWidth < MIN_TRACK_WIDTH) {
+      bar.classList.add("no-buttons");
+    }
   }
 
   function place() {

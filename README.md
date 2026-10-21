@@ -16,6 +16,9 @@ own mute button, volume slider and tagged-people button:
 - Click or drag along the track to jump anywhere; the lighter part shows what has loaded.
 - The time on the right is the position and the video's length.
 
+On narrow videos the bar drops the time first and then the skip buttons, so the track stays
+wide enough to use.
+
 The bar hides itself 2.5 seconds after the pointer stops moving over the video.
 
 ## Install in Chrome
