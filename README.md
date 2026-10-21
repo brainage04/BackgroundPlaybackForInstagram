@@ -17,14 +17,11 @@ Move the pointer over a video and the controls appear along its bottom edge:
 - **Play/pause** and the **time** (position / length) on the left.
 - **Volume** on the right: click to mute or unmute, or hover it and drag the slider that
   pops up. The volume you pick stays for every video until you reload the page.
-- **Settings** (gear): **Video quality**, either Auto or one of the sizes Instagram offers
-  for that video. A new choice takes effect within a few seconds, as Instagram fetches the
-  next part of the video.
 - **Picture-in-picture** and **full screen**.
 
 While the controls show, Instagram's own mute and tagged-people buttons in the bottom
 corners are hidden under them. On narrow videos the controls drop the time first, then
-settings and picture-in-picture, so nothing overlaps. The controls hide 2.5 seconds after
+picture-in-picture, so nothing overlaps. The controls hide 2.5 seconds after
 the pointer stops moving over the video.
 
 ## Sound on by default
@@ -71,11 +68,10 @@ its own clicks from reaching Instagram, which would otherwise pause or mute the 
 It runs in Instagram's page world rather than the extension's isolated world, because it
 drives Instagram's own player controller, found by walking React's fiber tree up from the
 `<video>` element. Play, pause, seek and mute go through that controller so Instagram's
-state matches what the controls show, and it is the only way to pick a video quality. The
-volume is set on the `<video>` element instead and re-applied when Instagram resets it,
-because Instagram's audio manager restores its own remembered volume whenever playback
-starts. Without a controller (if Instagram changes its code), everything except video
-quality still works through the `<video>` element.
+state matches what the controls show. The volume is set on the `<video>` element instead
+and re-applied when Instagram resets it, because Instagram's audio manager restores its
+own remembered volume whenever playback starts. Without a controller (if Instagram
+changes its code), the controls work on the `<video>` element directly.
 
 Both scripts run only on `https://www.instagram.com/*`, and the extension needs no
 permissions.
