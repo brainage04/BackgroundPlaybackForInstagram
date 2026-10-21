@@ -1,10 +1,22 @@
 # Instagram Background Playback
 
 Instagram's website pauses a video as soon as you switch to another tab, or even just click
-into another window. This Chrome extension stops that, so a reel or video keeps playing
-(and you keep hearing it) while you do something else.
+into another window, and it gives you no way to skip back or forward. This Chrome extension
+fixes both: a reel or video keeps playing (and you keep hearing it) while you do something
+else, and hovering over a video shows a seek bar.
 
 There are no settings, it doesn't touch your account, and it never sends anything anywhere.
+
+## Seeking
+
+Move the pointer over a video and a bar appears near its bottom edge, clear of Instagram's
+own mute button, volume slider and tagged-people button:
+
+- **−5** and **+5** jump back or forward 5 seconds.
+- Click or drag along the track to jump anywhere; the lighter part shows what has loaded.
+- The time on the right is the position and the video's length.
+
+The bar hides itself 2.5 seconds after the pointer stops moving over the video.
 
 ## Install in Chrome
 
@@ -20,6 +32,8 @@ To remove it later, click **Remove** on the same page.
 
 ## How it works
 
+### Background playback
+
 Instagram's player pauses when `document.hidden` is true or `document.hasFocus()` is false,
 and checks again on the window's `blur` and `focus` events and the document's
 `visibilitychange` event. `src/keep-visible.js` runs in Instagram's page before its own
@@ -30,7 +44,17 @@ scripts and:
 - stops `visibilitychange` events and the window's own `blur` event before Instagram's
   listeners see them. Blur events from text boxes and other elements pass through untouched.
 
-It runs only on `https://www.instagram.com/*` and needs no permissions.
+### Seek bar
+
+Instagram's own overlays sit on top of its `<video>` elements, so `src/seek-controls.js`
+draws the bar outside Instagram's page structure, in a closed shadow root fixed to the
+bottom of whichever video is under the pointer. It finds that video with
+`document.elementsFromPoint`, seeks by setting the video's `currentTime`, and stops its own
+clicks from reaching Instagram, which would otherwise pause or mute the video. It runs in
+the extension's isolated world, so Instagram's scripts cannot see or change it.
+
+Both scripts run only on `https://www.instagram.com/*`, and the extension needs no
+permissions.
 
 ## Limitations
 

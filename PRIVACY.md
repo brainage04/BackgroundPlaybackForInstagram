@@ -2,9 +2,10 @@
 
 Instagram Background Playback does not collect, store, sell, or transmit user data.
 
-It runs a small script on `www.instagram.com` pages that tells Instagram's own code the page
-is always visible and focused, so Instagram does not pause videos when you switch tabs or
-windows.
+It runs two small scripts on `www.instagram.com` pages. One tells Instagram's own code the
+page is always visible and focused, so Instagram does not pause videos when you switch tabs
+or windows. The other shows a seek bar over the video under your pointer and moves that
+video's playback position when you use it.
 
 The extension does not:
 
