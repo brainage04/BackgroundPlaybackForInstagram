@@ -18,8 +18,10 @@ Move the pointer over a video and the controls appear along its bottom edge:
 - **Volume** on the right: click to mute or unmute, or hover it and drag the slider that
   pops up. The volume you pick stays for every video until you reload the page.
 - **Settings** (gear): **Video quality**, either Auto or one of the resolutions Instagram
-  has for that video (360p and 720p on the reels tested). The gear only appears when there
-  is more than one. A new choice shows within about five seconds.
+  has for that video, read from Instagram's player for each video. The gear only appears
+  when there is more than one. A new choice shows within a few seconds (3–9 s in testing)
+  without interrupting playback. On a looping reel, the part already played before the
+  change keeps the old resolution on later loops.
 - **Picture-in-picture** and **full screen**.
 
 While the controls show, Instagram's own mute and tagged-people buttons in the bottom
@@ -80,9 +82,10 @@ quality still works through the `<video>` element.
 Instagram keeps playing whatever it has already buffered, so on its own a new quality
 would show only once that ran out, which for a reel looping from a full buffer is never.
 `src/media-source-registry.js` runs before Instagram's scripts and records which
-`MediaSource` and `SourceBuffer`s back each video; after a quality change the controls
-remove everything buffered except the half second being played, and Instagram refetches
-the rest at the new quality.
+`MediaSource` and `SourceBuffer`s back each video. After a quality change the controls
+remove the video buffered more than four seconds ahead of the playhead, and Instagram
+refetches it at the new quality. Keeping less than that, or also removing video behind
+the playhead, froze the picture for a few seconds and skipped footage in testing.
 
 All three scripts run only on `https://www.instagram.com/*`, and the extension needs no
 permissions.

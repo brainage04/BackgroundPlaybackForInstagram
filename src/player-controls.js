@@ -478,29 +478,30 @@
       return;
     }
     controller.selectVideoQuality(quality);
-    dropBufferedVideo(video);
+    dropBufferedVideoAhead(video);
   }
 
   // Instagram only fetches the new quality for parts of the video it has not buffered
-  // yet, so drop everything buffered except the half second being played; Instagram then
-  // refetches it at the new quality. Each removal waits until Instagram is not appending.
-  async function dropBufferedVideo(target) {
+  // yet, so the video it has buffered further ahead is dropped and Instagram refetches it
+  // at the new quality. The next four seconds stay: Instagram takes about three to fetch
+  // the new quality, and keeping less froze the picture and skipped footage. Video behind
+  // the playhead stays too, because Instagram fills that gap before anything ahead and
+  // playback stalls. Each removal waits until Instagram is not appending.
+  const KEEP_SECONDS = 4;
+
+  async function dropBufferedVideoAhead(target) {
     const { source, buffers } = mediaSources ? mediaSources.videoBuffersFor(target) : {};
     if (!source || source.readyState !== "open") {
       return;
     }
-    const now = target.currentTime;
+    const start = target.currentTime + KEEP_SECONDS;
     const end = Number.isFinite(source.duration) ? source.duration : duration(target);
-    const ranges = [
-      [0, now - 0.1],
-      [now + 0.5, end]
-    ].filter(([start, stop]) => stop - start > 0.05);
+    if (end - start <= 0.05) {
+      return;
+    }
     for (const sourceBuffer of buffers) {
-      if (![...source.sourceBuffers].includes(sourceBuffer)) {
-        continue;
-      }
-      for (const [start, stop] of ranges) {
-        await removeBuffered(sourceBuffer, Math.max(start, 0), stop);
+      if ([...source.sourceBuffers].includes(sourceBuffer)) {
+        await removeBuffered(sourceBuffer, start, end);
       }
     }
   }
