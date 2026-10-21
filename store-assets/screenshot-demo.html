@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Instagram Background Playback demo</title>
+    <link rel="stylesheet" href="listing.css" />
+    <style>
+      body {
+        display: grid;
+        place-items: center;
+        padding: 64px;
+      }
+
+      main {
+        width: min(1080px, 100%);
+      }
+
+      .browser {
+        margin-top: 48px;
+        overflow: hidden;
+        border: 1px solid rgb(148 163 184 / 35%);
+        border-radius: 18px;
+        background: #f8fafc;
+        box-shadow: 0 28px 80px rgb(2 6 23 / 55%);
+      }
+
+      .tabs {
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        height: 52px;
+        padding: 0 16px;
+        background: #cbd5e1;
+      }
+
+      .tab {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 280px;
+        height: 40px;
+        padding: 0 14px;
+        border-radius: 10px 10px 0 0;
+        background: #e2e8f0;
+        color: #475569;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .tab.active {
+        background: #ffffff;
+        color: #0f172a;
+      }
+
+      .tab .dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+        background: #64748b;
+      }
+
+      .tab .ig {
+        background: linear-gradient(45deg, #f59e0b, #e11d74, #7c3aed);
+      }
+
+      .tab .sound {
+        margin-left: auto;
+        color: #e11d74;
+      }
+
+      .page {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 40px;
+        min-height: 330px;
+        padding: 46px;
+        background: #ffffff;
+        color: #0f172a;
+      }
+
+      .page h2 {
+        margin: 0 0 18px;
+        font-size: 34px;
+      }
+
+      .line {
+        height: 14px;
+        margin-bottom: 14px;
+        border-radius: 7px;
+        background: #e2e8f0;
+      }
+
+      .note {
+        align-self: start;
+        padding: 22px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #e11d74, #7c3aed);
+        color: #ffffff;
+        font-size: 19px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .note small {
+        display: block;
+        margin-top: 8px;
+        color: #fce7f3;
+        font-size: 15px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand">
+        <img src="../icons/icon.svg" alt="" />
+        <div>
+          <p class="eyebrow">Instagram Background Playback</p>
+          <h1>Switch tabs. Keep listening.</h1>
+          <p class="subtitle">
+            Instagram pauses videos the moment you look at another tab or window. This keeps them
+            playing.
+          </p>
+        </div>
+      </div>
+
+      <section class="browser" aria-label="Example browser window">
+        <div class="tabs" aria-hidden="true">
+          <div class="tab">
+            <span class="dot ig"></span>Instagram<span class="sound">♪ playing</span>
+          </div>
+          <div class="tab active"><span class="dot"></span>Your other work</div>
+        </div>
+        <div class="page">
+          <div>
+            <h2>Working in another tab</h2>
+            <div class="line" style="width: 92%"></div>
+            <div class="line" style="width: 84%"></div>
+            <div class="line" style="width: 88%"></div>
+            <div class="line" style="width: 60%"></div>
+          </div>
+          <div class="note">
+            The Instagram video in the background tab is still playing.
+            <small>No settings, no account access, nothing sent anywhere.</small>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
