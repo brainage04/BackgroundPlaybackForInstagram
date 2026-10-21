@@ -1,25 +1,39 @@
 # Instagram Background Playback
 
 Instagram's website pauses a video as soon as you switch to another tab, or even just click
-into another window, and it gives you no way to skip back or forward. This Chrome extension
-fixes both: a reel or video keeps playing (and you keep hearing it) while you do something
-else, and hovering over a video shows a seek bar.
+into another window, starts every video muted, and gives you no way to skip back or
+forward. This Chrome extension fixes all three: a reel or video keeps playing (and you keep
+hearing it) while you do something else, videos play with sound, and hovering over a video
+shows player controls like X's.
 
 There are no settings, it doesn't touch your account, and it never sends anything anywhere.
 
-## Seeking
+## Player controls
 
-Move the pointer over a video and a bar appears near its bottom edge, clear of Instagram's
-own mute button, volume slider and tagged-people button:
+Move the pointer over a video and the controls appear along its bottom edge:
 
-- **−5** and **+5** jump back or forward 5 seconds.
-- Click or drag along the track to jump anywhere; the lighter part shows what has loaded.
-- The time on the right is the position and the video's length.
+- **Seek line** across the full width: click or drag anywhere on it to jump. The lighter
+  part shows what has loaded.
+- **Play/pause** and the **time** (position / length) on the left.
+- **Volume** on the right: click to mute or unmute, or hover it and drag the slider that
+  pops up. The volume you pick stays for every video until you reload the page.
+- **Settings** (gear): **Video quality**, either Auto or one of the sizes Instagram offers
+  for that video. A new choice takes effect within a few seconds, as Instagram fetches the
+  next part of the video.
+- **Picture-in-picture** and **full screen**.
 
-On narrow videos the bar drops the time first and then the skip buttons, so the track stays
-wide enough to use.
+While the controls show, Instagram's own mute and tagged-people buttons in the bottom
+corners are hidden under them. On narrow videos the controls drop the time first, then
+settings and picture-in-picture, so nothing overlaps. The controls hide 2.5 seconds after
+the pointer stops moving over the video.
 
-The bar hides itself 2.5 seconds after the pointer stops moving over the video.
+## Sound on by default
+
+Videos play with sound instead of muted. Chrome only lets a page unmute a video after you
+have clicked or pressed a key on it, so straight after opening Instagram the first video
+stays muted until your first click anywhere on the page; every video after that starts
+with sound. If you mute a video, with these controls or Instagram's own button, videos stay
+muted until you unmute or reload the page.
 
 ## Install in Chrome
 
@@ -47,14 +61,21 @@ scripts and:
 - stops `visibilitychange` events and the window's own `blur` event before Instagram's
   listeners see them. Blur events from text boxes and other elements pass through untouched.
 
-### Seek bar
+### Player controls and sound
 
-Instagram's own overlays sit on top of its `<video>` elements, so `src/seek-controls.js`
-draws the bar outside Instagram's page structure, in a closed shadow root fixed to the
-bottom of whichever video is under the pointer. It finds that video with
-`document.elementsFromPoint`, seeks by setting the video's `currentTime`, and stops its own
-clicks from reaching Instagram, which would otherwise pause or mute the video. It runs in
-the extension's isolated world, so Instagram's scripts cannot see or change it.
+Instagram's own overlays sit on top of its `<video>` elements, so `src/player-controls.js`
+draws the controls outside Instagram's page structure, in a closed shadow root laid over
+whichever video is under the pointer (found with `document.elementsFromPoint`). It stops
+its own clicks from reaching Instagram, which would otherwise pause or mute the video.
+
+It runs in Instagram's page world rather than the extension's isolated world, because it
+drives Instagram's own player controller, found by walking React's fiber tree up from the
+`<video>` element. Play, pause, seek and mute go through that controller so Instagram's
+state matches what the controls show, and it is the only way to pick a video quality. The
+volume is set on the `<video>` element instead and re-applied when Instagram resets it,
+because Instagram's audio manager restores its own remembered volume whenever playback
+starts. Without a controller (if Instagram changes its code), everything except video
+quality still works through the `<video>` element.
 
 Both scripts run only on `https://www.instagram.com/*`, and the extension needs no
 permissions.
