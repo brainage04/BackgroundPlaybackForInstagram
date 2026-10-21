@@ -562,10 +562,16 @@
         return;
       }
       keepChosenVolume(target);
-      // A playing video muted within moments of a click or key press was muted by the
-      // user, unless Instagram says it muted it itself (while moving between reels or
-      // stories, or from its audio manager). The video Instagram is leaving is paused.
-      if (target.muted && !target.paused && navigator.userActivation.isActive) {
+      // A playing video muted or unmuted within moments of a click or key press was
+      // changed by the user, in these controls or Instagram's own button, unless
+      // Instagram says it muted it itself (while moving between reels or stories, or from
+      // its audio manager). The video Instagram is leaving is paused by then.
+      if (target.paused || !navigator.userActivation.isActive) {
+        return;
+      }
+      if (!target.muted && target.volume > 0) {
+        userMuted = false;
+      } else if (target.muted) {
         const reason = playerState(target)?.lastMuteReason || "";
         if (
           !reason.endsWith("_transition_phase_initiated") &&
@@ -578,18 +584,28 @@
     true
   );
 
-  function unmutePlayingVideos() {
-    for (const target of document.querySelectorAll("video")) {
-      if (!target.paused) {
-        unmuteByDefault(target);
-      }
+  // Videos already playing when the page first gets user activation are unmuted then;
+  // later videos are unmuted as they start. Doing this only once matters: after a later
+  // click on Instagram's own mute button, the volumechange that marks the mute as the
+  // user's arrives as a separate task and would lose the race against a re-unmute.
+  const activationEvents = ["pointerup", "keydown"];
+  function onFirstActivation() {
+    if (!navigator.userActivation.hasBeenActive) {
+      return;
     }
-  }
-  for (const type of ["pointerup", "keydown"]) {
-    window.addEventListener(type, () => setTimeout(unmutePlayingVideos), {
-      capture: true,
-      passive: true
+    for (const type of activationEvents) {
+      window.removeEventListener(type, onFirstActivation, true);
+    }
+    setTimeout(() => {
+      for (const target of document.querySelectorAll("video")) {
+        if (!target.paused) {
+          unmuteByDefault(target);
+        }
+      }
     });
+  }
+  for (const type of activationEvents) {
+    window.addEventListener(type, onFirstActivation, true);
   }
 
   // ---- Rendering ---------------------------------------------------------------------
