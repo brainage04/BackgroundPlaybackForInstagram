@@ -921,14 +921,31 @@
     }, HIDE_AFTER_MS);
   }
 
+  // Instagram's overlays (a post opened from the feed, menus, the Messages button) sit in
+  // fixed-position layers on top of the page. A video under the pointer only counts when
+  // the topmost element there is not in such a layer, or in the same one as the video;
+  // otherwise a feed video behind an open post would get the controls.
+  function fixedLayer(element) {
+    for (let node = element; node instanceof Element; node = node.parentElement) {
+      if (getComputedStyle(node).position === "fixed") {
+        return node;
+      }
+    }
+    return null;
+  }
+
   function videoAt(x, y) {
-    return document
-      .elementsFromPoint(x, y)
-      .find(
-        (element) =>
-          element instanceof HTMLVideoElement &&
-          element.getBoundingClientRect().width >= MIN_VIDEO_WIDTH
-      );
+    const stack = document.elementsFromPoint(x, y);
+    const target = stack.find(
+      (element) =>
+        element instanceof HTMLVideoElement &&
+        element.getBoundingClientRect().width >= MIN_VIDEO_WIDTH
+    );
+    if (!target || stack[0] === target) {
+      return target;
+    }
+    const layer = fixedLayer(stack[0]);
+    return !layer || layer.contains(target) ? target : undefined;
   }
 
   window.addEventListener(
