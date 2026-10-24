@@ -29,6 +29,9 @@ corners are hidden under them. On narrow videos the controls drop the time first
 settings and picture-in-picture, so nothing overlaps. The controls hide 2.5 seconds after
 the pointer stops moving over the video.
 
+Stories don't get these controls: they have their own pause and mute buttons, and their
+reply box, like and share buttons sit where the controls would go.
+
 ## Sound on by default
 
 Videos play with sound instead of muted. Chrome only lets a page unmute a video after you

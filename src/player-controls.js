@@ -808,9 +808,20 @@
     });
   }
 
+  // Stories have their own pause and mute buttons, and their reply box, like and share
+  // buttons sit over the bottom of the video, where these controls would cover them.
+  function onStoryPage() {
+    return location.pathname.startsWith("/stories/");
+  }
+
   function place() {
     const rect = video.getBoundingClientRect();
-    if (!video.isConnected || rect.width < MIN_VIDEO_WIDTH || rect.height < MIN_VIDEO_HEIGHT) {
+    if (
+      onStoryPage() ||
+      !video.isConnected ||
+      rect.width < MIN_VIDEO_WIDTH ||
+      rect.height < MIN_VIDEO_HEIGHT
+    ) {
       hide();
       return false;
     }
@@ -912,9 +923,16 @@
   });
 
   // Keep pointer and click events on the controls away from Instagram's handlers, which
-  // would otherwise pause, mute, or open the video underneath.
+  // would otherwise pause, mute, or open the video underneath. In the feed the video sits
+  // inside a link to the post, and in full screen the controls move in there with it, so
+  // a click's default action (following that link) is cancelled too.
   for (const type of ["pointerdown", "pointerup", "mousedown", "mouseup", "click", "dblclick"]) {
-    host.addEventListener(type, (event) => event.stopPropagation());
+    host.addEventListener(type, (event) => {
+      event.stopPropagation();
+      if (type === "click" || type === "dblclick") {
+        event.preventDefault();
+      }
+    });
   }
 
   // Clicking anywhere outside the open menu closes it. Clicks inside the controls are
