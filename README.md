@@ -29,8 +29,8 @@ corners are hidden under them. On narrow videos the controls drop the time first
 settings and picture-in-picture, so nothing overlaps. The controls hide 2.5 seconds after
 the pointer stops moving over the video.
 
-Stories don't get these controls: they have their own pause and mute buttons, and their
-reply box, like and share buttons sit where the controls would go.
+On stories the controls sit just above the reply box and the like and share buttons, so
+those stay visible and clickable.
 
 ## Sound on by default
 

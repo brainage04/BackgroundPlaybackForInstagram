@@ -315,7 +315,8 @@
   let overControls = false;
   let menuView = null;
   let fitKey = "";
-  let lastCornerScan = 0;
+  let lastOverlayScan = 0;
+  let bottomInset = 0;
   let userMuted = false;
   let chosenVolume = null;
   let volumeReverts = [];
@@ -782,7 +783,6 @@
   // Instagram only draws them once the pointer is over the video and re-renders them,
   // so the corners are checked again a few times a second.
   function hideCornerButtons(rect) {
-    lastCornerScan = performance.now();
     for (const x of [rect.left + 24, rect.right - 24]) {
       const candidates = document.elementsFromPoint(x, rect.bottom - 24).filter((element) => {
         if (element === host || element === video || element.contains(video)) {
@@ -808,27 +808,61 @@
     });
   }
 
-  // Stories have their own pause and mute buttons, and their reply box, like and share
-  // buttons sit over the bottom of the video, where these controls would cover them.
+  // On stories the reply box and the like and share buttons sit over the bottom of the
+  // video instead, so the controls end just above the highest of them and nothing is
+  // hidden. Like the corners, this is checked again a few times a second.
+  const STORY_FOOTER_SELECTOR =
+    'textarea, input, [contenteditable="true"], [role="textbox"], button, [role="button"], a[href]';
+  const STORY_FOOTER_BAND = 0.3;
+  const STORY_FOOTER_GAP = 8;
+
   function onStoryPage() {
     return location.pathname.startsWith("/stories/");
   }
 
+  function storyFooterInset(rect) {
+    const bandTop = rect.bottom - rect.height * STORY_FOOTER_BAND;
+    let footerTop = rect.bottom;
+    for (const element of document.querySelectorAll(STORY_FOOTER_SELECTOR)) {
+      if (element.contains(video)) {
+        continue;
+      }
+      const box = element.getBoundingClientRect();
+      const overlaps =
+        box.width > 0 &&
+        box.top >= bandTop &&
+        box.top < rect.bottom &&
+        box.left < rect.right &&
+        box.right > rect.left;
+      if (overlaps) {
+        footerTop = Math.min(footerTop, box.top);
+      }
+    }
+    return footerTop < rect.bottom ? rect.bottom - footerTop + STORY_FOOTER_GAP : 0;
+  }
+
+  function scanOverlays(rect) {
+    lastOverlayScan = performance.now();
+    if (onStoryPage()) {
+      restoreCornerButtons();
+      bottomInset = storyFooterInset(rect);
+    } else {
+      bottomInset = 0;
+      hideCornerButtons(rect);
+    }
+  }
+
   function place() {
     const rect = video.getBoundingClientRect();
-    if (
-      onStoryPage() ||
-      !video.isConnected ||
-      rect.width < MIN_VIDEO_WIDTH ||
-      rect.height < MIN_VIDEO_HEIGHT
-    ) {
+    const height = rect.height - bottomInset;
+    if (!video.isConnected || rect.width < MIN_VIDEO_WIDTH || height < MIN_VIDEO_HEIGHT) {
       hide();
       return false;
     }
     host.style.left = `${rect.left}px`;
     host.style.top = `${rect.top}px`;
     host.style.width = `${rect.width}px`;
-    host.style.height = `${rect.height}px`;
+    host.style.height = `${height}px`;
     return true;
   }
 
@@ -837,8 +871,9 @@
     if (!video || !place()) {
       return;
     }
-    if (performance.now() - lastCornerScan > 400) {
-      hideCornerButtons(video.getBoundingClientRect());
+    if (performance.now() - lastOverlayScan > 400) {
+      scanOverlays(video.getBoundingClientRect());
+      place();
     }
     render();
     frame = requestAnimationFrame(tick);
@@ -850,10 +885,11 @@
       restoreCornerButtons();
       video = target;
       fitKey = "";
+      bottomInset = 0;
+      scanOverlays(video.getBoundingClientRect());
       if (!place()) {
         return;
       }
-      hideCornerButtons(video.getBoundingClientRect());
     }
     if (!host.isConnected) {
       document.documentElement.append(host);
