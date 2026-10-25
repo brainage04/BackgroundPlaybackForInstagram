@@ -855,7 +855,12 @@
   function place() {
     const rect = video.getBoundingClientRect();
     const height = rect.height - bottomInset;
-    if (!video.isConnected || rect.width < MIN_VIDEO_WIDTH || height < MIN_VIDEO_HEIGHT) {
+    if (
+      !video.isConnected ||
+      rect.width < MIN_VIDEO_WIDTH ||
+      height < MIN_VIDEO_HEIGHT ||
+      coveredByDialog(video)
+    ) {
       hide();
       return false;
     }
@@ -921,31 +926,29 @@
     }, HIDE_AFTER_MS);
   }
 
-  // Instagram's overlays (a post opened from the feed, menus, the Messages button) sit in
-  // fixed-position layers on top of the page. A video under the pointer only counts when
-  // the topmost element there is not in such a layer, or in the same one as the video;
-  // otherwise a feed video behind an open post would get the controls.
-  function fixedLayer(element) {
-    for (let node = element; node instanceof Element; node = node.parentElement) {
-      if (getComputedStyle(node).position === "fixed") {
-        return node;
+  // A post opened from the feed is a modal dialog over the page, and the feed video stays
+  // under it. While such a dialog is open, only videos inside it get the controls;
+  // otherwise the pointer over the post's comments would show them on the feed video.
+  const MODAL_SELECTOR = '[aria-modal="true"], dialog[open]';
+
+  function coveredByDialog(target) {
+    for (const dialog of document.querySelectorAll(MODAL_SELECTOR)) {
+      if (!dialog.contains(target) && dialog.getClientRects().length > 0) {
+        return true;
       }
     }
-    return null;
+    return false;
   }
 
   function videoAt(x, y) {
-    const stack = document.elementsFromPoint(x, y);
-    const target = stack.find(
-      (element) =>
-        element instanceof HTMLVideoElement &&
-        element.getBoundingClientRect().width >= MIN_VIDEO_WIDTH
-    );
-    if (!target || stack[0] === target) {
-      return target;
-    }
-    const layer = fixedLayer(stack[0]);
-    return !layer || layer.contains(target) ? target : undefined;
+    const target = document
+      .elementsFromPoint(x, y)
+      .find(
+        (element) =>
+          element instanceof HTMLVideoElement &&
+          element.getBoundingClientRect().width >= MIN_VIDEO_WIDTH
+      );
+    return target && !coveredByDialog(target) ? target : undefined;
   }
 
   window.addEventListener(
