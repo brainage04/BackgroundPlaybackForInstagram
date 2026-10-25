@@ -927,13 +927,27 @@
   }
 
   // A post opened from the feed is a modal dialog over the page, and the feed video stays
-  // under it. While such a dialog is open, only videos inside it get the controls;
-  // otherwise the pointer over the post's comments would show them on the feed video.
+  // under it. While such a dialog overlaps a video it does not contain, that video gets
+  // no controls; otherwise the pointer over the post's comments would show them on the
+  // feed video. A dialog off to the side (a panel that leaves the video uncovered) does
+  // not count.
   const MODAL_SELECTOR = '[aria-modal="true"], dialog[open]';
 
   function coveredByDialog(target) {
+    const video = target.getBoundingClientRect();
     for (const dialog of document.querySelectorAll(MODAL_SELECTOR)) {
-      if (!dialog.contains(target) && dialog.getClientRects().length > 0) {
+      if (dialog.contains(target)) {
+        continue;
+      }
+      const box = dialog.getBoundingClientRect();
+      const overlaps =
+        box.width > 0 &&
+        box.height > 0 &&
+        box.left < video.right &&
+        box.right > video.left &&
+        box.top < video.bottom &&
+        box.bottom > video.top;
+      if (overlaps) {
         return true;
       }
     }
