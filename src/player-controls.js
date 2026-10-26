@@ -810,11 +810,15 @@
 
   // On stories the reply box and the like and share buttons sit over the bottom of the
   // video instead, so the controls end just above the highest of them and nothing is
-  // hidden. Like the corners, this is checked again a few times a second.
+  // hidden. The space between the icons and the footer matches the space Instagram
+  // leaves below the footer, so the footer sits evenly between them. Like the corners,
+  // this is checked again a few times a second.
   const STORY_FOOTER_SELECTOR =
     'textarea, input, [contenteditable="true"], [role="textbox"], button, [role="button"], a[href]';
   const STORY_FOOTER_BAND = 0.3;
-  const STORY_FOOTER_GAP = 8;
+  // Space inside the controls below the icons: half of the 40px row around a 22px icon,
+  // plus the 4px bottom padding of .chrome.
+  const SPACE_BELOW_ICONS = (40 - 22) / 2 + 4;
 
   function onStoryPage() {
     return location.pathname.startsWith("/stories/");
@@ -823,6 +827,7 @@
   function storyFooterInset(rect) {
     const bandTop = rect.bottom - rect.height * STORY_FOOTER_BAND;
     let footerTop = rect.bottom;
+    let footerBottom = rect.top;
     for (const element of document.querySelectorAll(STORY_FOOTER_SELECTOR)) {
       if (element.contains(video)) {
         continue;
@@ -836,9 +841,14 @@
         box.right > rect.left;
       if (overlaps) {
         footerTop = Math.min(footerTop, box.top);
+        footerBottom = Math.max(footerBottom, Math.min(box.bottom, rect.bottom));
       }
     }
-    return footerTop < rect.bottom ? rect.bottom - footerTop + STORY_FOOTER_GAP : 0;
+    if (footerTop >= rect.bottom) {
+      return 0;
+    }
+    const gap = Math.max(0, rect.bottom - footerBottom - SPACE_BELOW_ICONS);
+    return rect.bottom - footerTop + gap;
   }
 
   function scanOverlays(rect) {
