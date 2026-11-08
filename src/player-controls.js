@@ -809,19 +809,62 @@
   }
 
   // On stories the reply box and the like and share buttons sit over the bottom of the
-  // video instead, so the controls end just above the highest of them and nothing is
-  // hidden. The space between the icons and the footer matches the space Instagram
-  // leaves below the footer, so the footer sits evenly between them. Like the corners,
-  // this is checked again a few times a second.
-  const STORY_FOOTER_SELECTOR =
-    'textarea, input, [contenteditable="true"], [role="textbox"], button, [role="button"], a[href]';
+  // video instead, so the controls end above them and nothing is hidden. The space
+  // between the bottom edge of the controls and the top of the footer matches the space
+  // Instagram leaves below the footer, so the footer sits evenly between them. Like the
+  // corners, this is checked again a few times a second.
+  const STORY_TEXTBOX_SELECTOR = 'textarea, input, [contenteditable="true"], [role="textbox"]';
+  const STORY_FOOTER_SELECTOR = `${STORY_TEXTBOX_SELECTOR}, button, [role="button"], a[href]`;
   const STORY_FOOTER_BAND = 0.3;
-  // Space inside the controls below the icons: half of the 40px row around a 22px icon,
-  // plus the 4px bottom padding of .chrome.
-  const SPACE_BELOW_ICONS = (40 - 22) / 2 + 4;
 
   function onStoryPage() {
     return location.pathname.startsWith("/stories/");
+  }
+
+  function opaque(color) {
+    const parts = color.match(/[\d.]+/g);
+    return parts !== null && (parts.length < 4 || Number(parts[3]) > 0);
+  }
+
+  function drawsBox(element) {
+    const style = getComputedStyle(element);
+    const border =
+      parseFloat(style.borderTopWidth) > 0 &&
+      style.borderTopStyle !== "none" &&
+      opaque(style.borderTopColor);
+    return border || opaque(style.backgroundColor);
+  }
+
+  // The part of a footer element that can be seen. Instagram draws the reply box as a
+  // bordered pill around a smaller text box, and the like and share buttons as icons
+  // inside larger, invisible buttons, so the elements' own boxes would put the footer
+  // lower and the space above it smaller than they look.
+  function visibleFooterBox(element, rect) {
+    if (element.matches(STORY_TEXTBOX_SELECTOR)) {
+      for (let node = element; node && !node.contains(video); node = node.parentElement) {
+        const box = node.getBoundingClientRect();
+        if (box.height > rect.height * STORY_FOOTER_BAND) {
+          break;
+        }
+        if (drawsBox(node)) {
+          return box;
+        }
+      }
+      return element.getBoundingClientRect();
+    }
+    if (drawsBox(element)) {
+      return element.getBoundingClientRect();
+    }
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (const graphic of element.querySelectorAll("svg, img")) {
+      const box = graphic.getBoundingClientRect();
+      if (box.width > 0) {
+        top = Math.min(top, box.top);
+        bottom = Math.max(bottom, box.bottom);
+      }
+    }
+    return top < bottom ? { top, bottom } : element.getBoundingClientRect();
   }
 
   function storyFooterInset(rect) {
@@ -840,15 +883,15 @@
         box.left < rect.right &&
         box.right > rect.left;
       if (overlaps) {
-        footerTop = Math.min(footerTop, box.top);
-        footerBottom = Math.max(footerBottom, Math.min(box.bottom, rect.bottom));
+        const visible = visibleFooterBox(element, rect);
+        footerTop = Math.min(footerTop, visible.top);
+        footerBottom = Math.max(footerBottom, Math.min(visible.bottom, rect.bottom));
       }
     }
     if (footerTop >= rect.bottom) {
       return 0;
     }
-    const gap = Math.max(0, rect.bottom - footerBottom - SPACE_BELOW_ICONS);
-    return rect.bottom - footerTop + gap;
+    return rect.bottom - footerTop + (rect.bottom - footerBottom);
   }
 
   function scanOverlays(rect) {
