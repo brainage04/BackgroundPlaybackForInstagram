@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "reload:extension": "node scripts/reload-extension.js",
     "render:store-assets": "node scripts/render-store-assets.js",
+    "render:store-screenshots": "node scripts/render-store-screenshots.js",
     "test": "node scripts/test-player-controls.js"
   },
   "devDependencies": {

@@ -23,8 +23,8 @@ Description:
 > - Move the pointer over a video for player controls: a seek line, play and pause, the
 >   time, volume, video quality, picture-in-picture and full screen.
 >
-> There are no settings. The extension asks for no permissions, runs only on
-> www.instagram.com, doesn't touch your account and never sends anything anywhere.
+> There are no settings. The extension asks only for access to www.instagram.com and never
+> sends anything anywhere.
 >
 > Chrome itself pauses muted videos in background tabs, so turn the sound on before
 > switching away. Instagram can't tell the tab is in the background, so it may mark direct
@@ -39,7 +39,8 @@ Language: English
 Graphics:
 
 - Store icon: `icons/icon128.png`
-- Screenshot: `store-assets/screenshot-demo-1280x800.png`
+- Screenshots, in this order: `store-assets/screenshot-controls-1280x800.png`,
+  `store-assets/screenshot-quality-1280x800.png`, `store-assets/screenshot-demo-1280x800.png`
 - Small promo tile: `store-assets/small-promo-tile-440x280.png`
 
 ## Privacy practices tab

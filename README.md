@@ -6,7 +6,7 @@ forward. This Chrome extension fixes all three: a reel or video keeps playing (a
 hearing it) while you do something else, videos play with sound, and hovering over a video
 shows full player controls.
 
-There are no settings, it doesn't touch your account, and it never sends anything anywhere.
+There are no settings, and it never sends anything anywhere.
 
 This extension is not made by or affiliated with Instagram or Meta.
 
@@ -89,8 +89,8 @@ would show only once that ran out, which for a reel looping from a full buffer i
 remove the video buffered more than four seconds ahead of the playhead, and Instagram
 refetches it at the new quality.
 
-All three scripts run only on `https://www.instagram.com/*`, and the extension needs no
-permissions.
+All three scripts run only on `https://www.instagram.com/*`, and that is the only access
+the extension asks for.
 
 ## Limitations
 
@@ -124,7 +124,9 @@ The extension has no build step. After editing, reload it in `chrome://extension
 `EXTENSION_ID`, `EXTENSION_NAME`, or `CDP_PORT` to override how it finds the extension.
 
 `npm run render:store-assets` renders the Web Store images from `store-assets/*.html` with
-local headless Chrome (set `CHROME_BIN` if needed). `npm run build:zip` writes
+local headless Chrome (set `CHROME_BIN` if needed). `npm run render:store-screenshots`
+renders the screenshots of the controls with the extension loaded into headless Chromium
+over a clip made with `ffmpeg`. `npm run build:zip` writes
 `dist/instagram-background-playback-<version>.zip` containing `manifest.json`, `icons/`, and
 `src/`, named after the version in `manifest.json`. Keep the version in `package.json` the
 same.
@@ -136,7 +138,7 @@ same.
 - `src/media-source-registry.js`: records each video's `MediaSource` for quality changes.
 - `src/player-controls.js`: the player controls and sound on by default.
 - `icons/`: editable SVG icon and generated PNGs.
-- `scripts/`: ZIP builder, reload helper, store-asset renderer and the headless tests.
+- `scripts/`: ZIP builder, reload helper, store image renderers and the headless tests.
 - `store-assets/`: Web Store listing text, listing pages and generated images.
 
 See [PRIVACY.md](./PRIVACY.md) for the privacy policy.
