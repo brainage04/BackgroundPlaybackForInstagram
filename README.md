@@ -1,12 +1,14 @@
-# Instagram Background Playback
+# Background Playback for Instagram
 
 Instagram's website pauses a video as soon as you switch to another tab, or even just click
-into another window, starts every video muted, and gives you no way to skip back or
+into another window. It also starts every video muted and gives you no way to skip back or
 forward. This Chrome extension fixes all three: a reel or video keeps playing (and you keep
 hearing it) while you do something else, videos play with sound, and hovering over a video
-shows player controls like X's.
+shows full player controls.
 
 There are no settings, it doesn't touch your account, and it never sends anything anywhere.
+
+This extension is not made by or affiliated with Instagram or Meta.
 
 ## Player controls
 
@@ -16,7 +18,8 @@ Move the pointer over a video and the controls appear along its bottom edge:
   part shows what has loaded.
 - **Play/pause** and the **time** (position / length) on the left.
 - **Volume** on the right: click to mute or unmute, or hover it and drag the slider that
-  pops up. The volume you pick stays for every video until you reload the page.
+  pops up. Sliding it to the bottom mutes the video. The volume you pick stays for every
+  video until you reload the page.
 - **Settings** (gear): **Video quality**, either Auto or one of the resolutions Instagram
   has for that video, read from Instagram's player for each video. The gear only appears
   when there is more than one. A new choice shows within a few seconds (3–9 s in testing)
@@ -26,11 +29,12 @@ Move the pointer over a video and the controls appear along its bottom edge:
 
 While the controls show, Instagram's own mute and tagged-people buttons in the bottom
 corners are hidden under them. On narrow videos the controls drop the time first, then
-settings and picture-in-picture, so nothing overlaps. The controls hide 2.5 seconds after
-the pointer stops moving over the video.
+settings, picture-in-picture and full screen, so nothing overlaps. The controls hide 2.5
+seconds after the pointer stops moving over the video.
 
 Only a video you can see gets the controls. A video hidden under a solid part of the page,
-like the home feed under a reel opened from it, gets none.
+like the home feed under a reel opened from it, gets none, and so does a video whose bottom
+edge is under a bar across the page.
 
 On stories the controls sit above the reply box and the like and share buttons, so those
 stay visible and clickable. The space between the controls and the reply box is the same
@@ -40,13 +44,13 @@ as the space below the reply box.
 
 Videos play with sound instead of muted. Chrome only lets a page unmute a video after you
 have clicked or pressed a key on it, so straight after opening Instagram the first video
-stays muted until your first click anywhere on the page; every video after that starts
-with sound. If you mute a video, with these controls or Instagram's own button, videos stay
+stays muted until your first click anywhere on the page. Every video after that starts with
+sound. If you mute a video, with these controls or Instagram's own button, videos stay
 muted until you unmute or reload the page.
 
 ## Install in Chrome
 
-There is no Chrome Web Store listing, so it is installed by hand, which takes about a minute:
+To install it from this repository, which takes about a minute:
 
 1. Download or copy this folder somewhere you will keep it.
 2. In Chrome, type `chrome://extensions` in the address bar and press Enter.
@@ -104,7 +108,8 @@ permissions.
   away.
 - **Instagram always thinks you are looking at it.** While you have a direct message thread
   open in a background tab, Instagram may treat new messages as seen, as it would if the
-  tab were in front.
+  tab were in front. Stories open in a background tab keep moving on to the next one, so
+  Instagram may mark them as seen too.
 - Instagram can change its player code at any time, which may stop this working.
 
 ## Development
@@ -116,9 +121,10 @@ npm install
 npm run check
 ```
 
-`npm test` loads the extension into headless Chromium, hovers fixture pages served at an
-Instagram URL and checks where the controls appear. Set `CHROME_BIN` to a Chromium
-executable if `chromium` is not on the path: Google Chrome ignores `--load-extension`.
+`npm test` loads the extension into headless Chromium, serves fixture pages at Instagram
+URLs, moves and clicks the pointer over them and checks what the controls do. Set
+`CHROME_BIN` to a Chromium executable if `chromium` is not on the path: Google Chrome
+ignores `--load-extension`.
 
 Use `npm run lint` or `npm run format:check` to run one check, and `npm run format` to apply
 Prettier formatting.
@@ -130,7 +136,8 @@ The extension has no build step. After editing, reload it in `chrome://extension
 `npm run render:store-assets` renders the Web Store images from `store-assets/*.html` with
 local headless Chrome (set `CHROME_BIN` if needed). `npm run build:zip` writes
 `dist/instagram-background-playback-<version>.zip` containing `manifest.json`, `icons/`, and
-`src/`. Keep the versions in `package.json` and `manifest.json` identical.
+`src/`, named after the version in `manifest.json`. Keep the version in `package.json` the
+same.
 
 ## Files
 
@@ -139,7 +146,7 @@ local headless Chrome (set `CHROME_BIN` if needed). `npm run build:zip` writes
 - `src/media-source-registry.js`: records each video's `MediaSource` for quality changes.
 - `src/player-controls.js`: the player controls and sound on by default.
 - `icons/`: editable SVG icon and generated PNGs.
-- `scripts/`: ZIP builder, reload helper, and store-asset renderer.
-- `store-assets/`: Web Store listing pages and generated images.
+- `scripts/`: ZIP builder, reload helper, store-asset renderer and the headless tests.
+- `store-assets/`: Web Store listing text, listing pages and generated images.
 
 See [PRIVACY.md](./PRIVACY.md) for the privacy policy.

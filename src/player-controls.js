@@ -1,12 +1,12 @@
-// X-style controls for Instagram videos: a seek line, play/pause, time, volume, video
-// quality, picture-in-picture and fullscreen, plus sound on by default.
+// Player controls for Instagram videos (seek line, play/pause, time, volume, video
+// quality, picture-in-picture and full screen), and sound on by default.
 //
 // Instagram's overlays sit on top of its <video> elements, so the controls live outside
 // Instagram's DOM in a closed shadow root laid over whichever video the pointer is on.
-// Runs in Instagram's page world so it can drive Instagram's own player controller
-// (found through React's fiber tree); that keeps Instagram's mute, volume and quality
+// The script runs in Instagram's page world to drive Instagram's own player controller,
+// found through React's fiber tree. The controller keeps Instagram's mute and quality
 // state in step with the controls and is the only way to pick a video quality. When no
-// controller is found, the controls fall back to the <video> element itself.
+// controller is found, the controls drive the <video> element itself.
 (() => {
   "use strict";
 
@@ -281,7 +281,7 @@
           <button class="mute"></button>
         </div>
         <button class="settings" title="Settings" data-priority="2">${icon("settings")}</button>
-        <button class="pip" title="Picture-in-Picture" data-priority="3">${icon("pip")}</button>
+        <button class="pip" title="Picture-in-picture" data-priority="3">${icon("pip")}</button>
         <button class="fullscreen" data-priority="4"></button>
       </div>
     </div>`;
@@ -447,7 +447,8 @@
   // Instagram's audio manager puts every video back to its own remembered volume when
   // playback starts, and its controller's setVolume does not change that memory. So the
   // volume picked here is set on the element and re-applied whenever Instagram changes
-  // it, with a cap in case Instagram ever fights back on every change.
+  // it, up to a limit per video in case Instagram fights back on every change. A volume
+  // of 0 mutes instead, so Instagram's own unmute button still brings the sound back.
   function setVolume(level) {
     const value = Math.min(Math.max(level, 0), 1);
     if (value === 0) {
@@ -642,10 +643,11 @@
     true
   );
 
-  // Videos already playing when the page first gets user activation are unmuted then;
-  // later videos are unmuted as they start. Doing this only once matters: after a later
-  // click on Instagram's own mute button, the volumechange that marks the mute as the
-  // user's arrives as a separate task and would lose the race against a re-unmute.
+  // Videos already playing when the page first gets user activation are unmuted then, and
+  // later videos as they start. The check also runs once at load, for a click made before
+  // this script ran. Doing this only once matters: after a later click on Instagram's own
+  // mute button, the volumechange that marks the mute as the user's arrives as a separate
+  // task and would lose the race against a re-unmute.
   const activationEvents = ["pointerup", "keydown"];
   function onFirstActivation() {
     if (!navigator.userActivation.hasBeenActive) {
@@ -723,7 +725,7 @@
     fit();
   }
 
-  // On narrow videos, drop the time, then settings, picture-in-picture and fullscreen
+  // On narrow videos, drop the time, then settings, picture-in-picture and full screen
   // rather than let the row overflow. Re-measured only when the width or label changes.
   function fit() {
     const key = `${host.style.width}|${time.textContent.length}|${settingsButton.hidden}|${pipButton.hidden}`;
