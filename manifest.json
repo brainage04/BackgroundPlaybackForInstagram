@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Instagram Background Playback",
+  "name": "Background Playback for Instagram",
   "version": "1.0.0",
-  "description": "Keeps Instagram videos playing in background tabs, with sound on and X-style player controls.",
+  "description": "Keeps Instagram videos playing in background tabs, with sound on and full player controls.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

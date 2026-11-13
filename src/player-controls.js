@@ -540,7 +540,7 @@
         await video.requestPictureInPicture();
       }
     } catch (error) {
-      console.warn("Instagram Background Playback: picture-in-picture failed.", error);
+      console.warn("Background Playback for Instagram: picture-in-picture failed.", error);
     }
   }
 
@@ -558,7 +558,7 @@
         await target.requestFullscreen();
       }
     } catch (error) {
-      console.warn("Instagram Background Playback: fullscreen failed.", error);
+      console.warn("Background Playback for Instagram: full screen failed.", error);
     }
   }
 

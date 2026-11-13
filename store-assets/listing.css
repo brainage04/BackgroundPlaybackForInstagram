@@ -18,7 +18,7 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow: hidden;
-  background: linear-gradient(145deg, #12071f, #1e1028 60%, #3b0764);
+  background: linear-gradient(145deg, #06121f, #0b1d2e 60%, #0c3b5e);
   color: #f8fafc;
 }
 
@@ -35,7 +35,7 @@ body {
 
 .eyebrow {
   margin: 0 0 10px;
-  color: #f9a8d4;
+  color: #7dd3fc;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.12em;
