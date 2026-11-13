@@ -821,9 +821,12 @@
     return location.pathname.startsWith("/stories/");
   }
 
-  function opaque(color) {
+  function alpha(color) {
     const parts = color.match(/[\d.]+/g);
-    return parts !== null && (parts.length < 4 || Number(parts[3]) > 0);
+    if (parts === null) {
+      return 0;
+    }
+    return parts.length < 4 ? 1 : Number(parts[3]);
   }
 
   function drawsBox(element) {
@@ -831,8 +834,8 @@
     const border =
       parseFloat(style.borderTopWidth) > 0 &&
       style.borderTopStyle !== "none" &&
-      opaque(style.borderTopColor);
-    return border || opaque(style.backgroundColor);
+      alpha(style.borderTopColor) > 0;
+    return border || alpha(style.backgroundColor) > 0;
   }
 
   // The part of a footer element that can be seen. Instagram draws the reply box as a
@@ -1007,15 +1010,42 @@
     return false;
   }
 
-  function videoAt(x, y) {
-    const target = document
-      .elementsFromPoint(x, y)
-      .find(
-        (element) =>
-          element instanceof HTMLVideoElement &&
-          element.getBoundingClientRect().width >= MIN_VIDEO_WIDTH
+  // A reel opened from the home feed shows in a viewer with a solid background, and the
+  // feed stays in the page under it (seen 13 Nov 2026). The feed's videos still turn up in
+  // elementsFromPoint, so a video whose visible part is covered by a solid layer above it
+  // is out of sight and gets no controls.
+  function hiddenUnder(target, above) {
+    const box = target.getBoundingClientRect();
+    const left = Math.max(box.left, 0);
+    const top = Math.max(box.top, 0);
+    const right = Math.min(box.right, innerWidth);
+    const bottom = Math.min(box.bottom, innerHeight);
+    return above.some((element) => {
+      const cover = element.getBoundingClientRect();
+      return (
+        cover.left <= left &&
+        cover.top <= top &&
+        cover.right >= right &&
+        cover.bottom >= bottom &&
+        alpha(getComputedStyle(element).backgroundColor) === 1
       );
-    return target && !coveredByDialog(target) ? target : undefined;
+    });
+  }
+
+  function videoAt(x, y) {
+    const stack = document.elementsFromPoint(x, y);
+    const index = stack.findIndex(
+      (element) =>
+        element instanceof HTMLVideoElement &&
+        element.getBoundingClientRect().width >= MIN_VIDEO_WIDTH
+    );
+    if (index < 0) {
+      return undefined;
+    }
+    const target = stack[index];
+    return coveredByDialog(target) || hiddenUnder(target, stack.slice(0, index))
+      ? undefined
+      : target;
   }
 
   window.addEventListener(

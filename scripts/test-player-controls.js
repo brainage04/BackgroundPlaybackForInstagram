@@ -108,8 +108,10 @@ async function startChrome() {
     await delay(100);
   }
   const port = Number(fs.readFileSync(portFile, "utf8").split("\n")[0]);
-  const stop = () => {
+  const stop = async () => {
+    const exited = new Promise((resolve) => chrome.once("exit", resolve));
     chrome.kill();
+    await exited;
     fs.rmSync(profile, { recursive: true, force: true });
   };
   return { port, stop };
@@ -163,7 +165,7 @@ async function main() {
     }
   } finally {
     await client?.close();
-    stop();
+    await stop();
   }
   if (failed) {
     console.error(`${failed} of ${cases.length} failed`);

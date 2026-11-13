@@ -29,6 +29,9 @@ corners are hidden under them. On narrow videos the controls drop the time first
 settings and picture-in-picture, so nothing overlaps. The controls hide 2.5 seconds after
 the pointer stops moving over the video.
 
+Only a video you can see gets the controls. A video hidden under a solid part of the page,
+like the home feed under a reel opened from it, gets none.
+
 On stories the controls sit above the reply box and the like and share buttons, so those
 stay visible and clickable. The space between the controls and the reply box is the same
 as the space below the reply box.
@@ -112,6 +115,10 @@ The development tooling requires Node.js `^20.19.0`, `^22.13.0`, or `>=24`.
 npm install
 npm run check
 ```
+
+`npm test` loads the extension into headless Chromium, hovers fixture pages served at an
+Instagram URL and checks where the controls appear. Set `CHROME_BIN` to a Chromium
+executable if `chromium` is not on the path: Google Chrome ignores `--load-extension`.
 
 Use `npm run lint` or `npm run format:check` to run one check, and `npm run format` to apply
 Prettier formatting.
