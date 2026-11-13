@@ -321,6 +321,7 @@
   let barOverBottom = false;
   let userMuted = false;
   let chosenVolume = null;
+  let volumeBeforeDrag = 1;
   const rendered = {};
 
   // ---- Instagram's player controller -------------------------------------------------
@@ -447,11 +448,14 @@
   // Instagram's audio manager puts every video back to its own remembered volume when
   // playback starts, and its controller's setVolume does not change that memory. So the
   // volume picked here is set on the element and re-applied whenever Instagram changes
-  // it, up to a limit per video in case Instagram fights back on every change. A volume
-  // of 0 mutes instead, so Instagram's own unmute button still brings the sound back.
+  // it, up to a limit per video in case Instagram fights back on every change. Sliding to
+  // 0 mutes instead and keeps the volume from before the slide (not the last small value
+  // the slide passed), so either unmute button brings the sound back.
   function setVolume(level) {
     const value = Math.min(Math.max(level, 0), 1);
     if (value === 0) {
+      chosenVolume = volumeBeforeDrag;
+      video.volume = volumeBeforeDrag;
       setMuted(video, true);
       userMuted = true;
       return;
@@ -1213,6 +1217,7 @@
     adjustingVolume = true;
     volume.classList.add("adjusting");
     volumePop.setPointerCapture(event.pointerId);
+    volumeBeforeDrag = video.volume;
     volumeToPointer(event);
   });
   volumePop.addEventListener("pointermove", (event) => {
