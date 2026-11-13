@@ -284,23 +284,26 @@ const cases = [
     expected: false
   },
   {
-    name: "volume slid to 0 mutes, so Instagram's own unmute brings the sound back",
+    name: "volume slid down to 0 mutes, and Instagram's own unmute brings back the volume from before",
     html: page(feedVideo),
     run: async (page) => {
       await page.hover([300, 300]);
       await page.hover(await page.control(".mute"));
       const rail = await page.box(".volume-rail");
       await page.mouse("mousePressed", [rail.x, rail.y], 1);
-      await page.mouse("mouseMoved", [rail.x, rail.bottom + 20], 1);
-      await page.mouse("mouseReleased", [rail.x, rail.bottom + 20]);
+      for (let y = rail.y; y <= rail.bottom + 12; y += 6) {
+        await page.mouse("mouseMoved", [rail.x, y], 1);
+      }
+      await page.mouse("mouseReleased", [rail.x, rail.bottom + 12]);
       return page.evaluate(async () => {
         const video = document.getElementById("video");
+        const mutedBySlide = video.muted;
         video.muted = false;
         await new Promise((resolve) => setTimeout(resolve, 50));
-        return { muted: video.muted, audible: video.volume > 0 };
+        return { mutedBySlide, muted: video.muted, volume: video.volume };
       });
     },
-    expected: { muted: false, audible: true }
+    expected: { mutedBySlide: true, muted: false, volume: 1 }
   },
   {
     name: "Instagram resetting one video's volume many times doesn't stop the next keeping yours",
