@@ -1,7 +1,7 @@
 {
   "name": "instagram-background-playback",
   "private": true,
-  "version": "1.4.6",
+  "version": "1.0.0",
   "description": "Chrome extension that keeps Instagram videos playing in background tabs.",
   "type": "commonjs",
   "engines": {
