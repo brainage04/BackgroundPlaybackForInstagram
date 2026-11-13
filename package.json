@@ -14,7 +14,8 @@
     "format:check": "prettier --check . --ignore-unknown",
     "lint": "eslint .",
     "reload:extension": "node scripts/reload-extension.js",
-    "render:store-assets": "node scripts/render-store-assets.js"
+    "render:store-assets": "node scripts/render-store-assets.js",
+    "test": "node scripts/test-player-controls.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
