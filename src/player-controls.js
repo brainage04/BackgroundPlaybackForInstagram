@@ -207,7 +207,8 @@
         display: none;
         min-width: 220px;
         max-width: calc(100% - 16px);
-        overflow: hidden;
+        max-height: calc(100% - 72px);
+        overflow: hidden auto;
         border-radius: 14px;
         background: rgb(24 24 24 / 96%);
         box-shadow: 0 8px 28px rgb(0 0 0 / 45%);
@@ -317,9 +318,9 @@
   let fitKey = "";
   let lastOverlayScan = 0;
   let bottomInset = 0;
+  let barOverBottom = false;
   let userMuted = false;
   let chosenVolume = null;
-  let volumeReverts = [];
   const rendered = {};
 
   // ---- Instagram's player controller -------------------------------------------------
@@ -330,10 +331,8 @@
     if (!value || typeof value !== "object" || depth > 3 || value instanceof Node) {
       return null;
     }
-    if (
-      typeof value.selectVideoQuality === "function" &&
-      typeof value.getCurrentState === "function"
-    ) {
+    const methods = ["selectVideoQuality", "getCurrentState", "seek", "play", "pause", "setMuted"];
+    if (methods.every((name) => typeof value[name] === "function")) {
       return value;
     }
     let keys;
@@ -451,22 +450,30 @@
   // it, with a cap in case Instagram ever fights back on every change.
   function setVolume(level) {
     const value = Math.min(Math.max(level, 0), 1);
+    if (value === 0) {
+      setMuted(video, true);
+      userMuted = true;
+      return;
+    }
     chosenVolume = value;
     video.volume = value;
-    if (value > 0 && video.muted) {
+    if (video.muted) {
       setMuted(video, false);
     }
-    userMuted = value === 0;
+    userMuted = false;
   }
+
+  const volumeReverts = new WeakMap();
 
   function keepChosenVolume(target) {
     if (chosenVolume === null || Math.abs(target.volume - chosenVolume) < 0.005) {
       return;
     }
     const now = performance.now();
-    volumeReverts = volumeReverts.filter((at) => now - at < 10000);
-    if (volumeReverts.length < 20) {
-      volumeReverts.push(now);
+    const reverts = (volumeReverts.get(target) || []).filter((at) => now - at < 10000);
+    volumeReverts.set(target, reverts);
+    if (reverts.length < 20) {
+      reverts.push(now);
       target.volume = chosenVolume;
     }
   }
@@ -658,6 +665,7 @@
   for (const type of activationEvents) {
     window.addEventListener(type, onFirstActivation, true);
   }
+  onFirstActivation();
 
   // ---- Rendering ---------------------------------------------------------------------
 
@@ -875,7 +883,9 @@
     let footerTop = rect.bottom;
     let footerBottom = rect.top;
     for (const element of document.querySelectorAll(STORY_FOOTER_SELECTOR)) {
-      if (element.contains(video)) {
+      const outsideFullscreen =
+        document.fullscreenElement && !document.fullscreenElement.contains(element);
+      if (element.contains(video) || outsideFullscreen) {
         continue;
       }
       const box = element.getBoundingClientRect();
@@ -897,14 +907,37 @@
     return rect.bottom - footerTop + (rect.bottom - footerBottom);
   }
 
+  // A bar fixed over the video's bottom edge, like Instagram's bottom navigation in a
+  // narrow window, would sit under the controls and lose its clicks, so that video gets
+  // no controls.
+  function bottomEdgeCovered(rect) {
+    const left = Math.max(rect.left, 0);
+    const right = Math.min(rect.right, innerWidth);
+    const bottom = Math.min(rect.bottom, innerHeight) - 1;
+    const stack = document.elementsFromPoint((left + right) / 2, bottom);
+    return stack.slice(0, Math.max(stack.indexOf(video), 0)).some((element) => {
+      const box = element.getBoundingClientRect();
+      return (
+        element !== host &&
+        box.left <= left &&
+        box.right >= right &&
+        alpha(getComputedStyle(element).backgroundColor) === 1
+      );
+    });
+  }
+
   function scanOverlays(rect) {
     lastOverlayScan = performance.now();
     if (onStoryPage()) {
       restoreCornerButtons();
       bottomInset = storyFooterInset(rect);
+      barOverBottom = false;
     } else {
       bottomInset = 0;
-      hideCornerButtons(rect);
+      barOverBottom = bottomEdgeCovered(rect);
+      if (!barOverBottom) {
+        hideCornerButtons(rect);
+      }
     }
   }
 
@@ -915,7 +948,8 @@
       !video.isConnected ||
       rect.width < MIN_VIDEO_WIDTH ||
       height < MIN_VIDEO_HEIGHT ||
-      coveredByDialog(video)
+      coveredByDialog(video) ||
+      barOverBottom
     ) {
       hide();
       return false;
@@ -934,7 +968,9 @@
     }
     if (performance.now() - lastOverlayScan > 400) {
       scanOverlays(video.getBoundingClientRect());
-      place();
+      if (!place()) {
+        return;
+      }
     }
     render();
     frame = requestAnimationFrame(tick);
@@ -1137,6 +1173,9 @@
   });
 
   function seekToPointer(event) {
+    if (!video) {
+      return;
+    }
     const rect = progress.getBoundingClientRect();
     seek(((event.clientX - rect.left) / rect.width) * duration(video));
   }
@@ -1161,6 +1200,9 @@
   }
 
   function volumeToPointer(event) {
+    if (!video) {
+      return;
+    }
     const rect = volumePop.querySelector(".volume-rail").getBoundingClientRect();
     setVolume((rect.bottom - event.clientY) / rect.height);
   }

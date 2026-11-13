@@ -3,9 +3,10 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const packageJson = require(path.join(root, "package.json"));
+const { version } = require(path.join(root, "manifest.json"));
+const { name } = require(path.join(root, "package.json"));
 const distDir = path.join(root, "dist");
-const output = path.join(distDir, `${packageJson.name}-${packageJson.version}.zip`);
+const output = path.join(distDir, `${name}-${version}.zip`);
 
 function ensureZip() {
   try {
