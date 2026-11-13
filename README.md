@@ -18,27 +18,19 @@ Move the pointer over a video and the controls appear along its bottom edge:
   part shows what has loaded.
 - **Play/pause** and the **time** (position / length) on the left.
 - **Volume** on the right: click to mute or unmute, or hover it and drag the slider that
-  pops up. Sliding it to the bottom mutes the video. The volume you pick stays for every
-  video until you reload the page.
+  pops up. The volume you pick stays for every video until you reload the page.
 - **Settings** (gear): **Video quality**, either Auto or one of the resolutions Instagram
-  has for that video, read from Instagram's player for each video. The gear only appears
-  when there is more than one. A new choice shows within a few seconds (3–9 s in testing)
-  without interrupting playback. On a looping reel, the part already played before the
-  change keeps the old resolution on later loops.
+  has for that video. The gear only appears when there is more than one. A new choice
+  shows within a few seconds. On a looping reel, the part already played before the change
+  keeps the old resolution on later loops.
 - **Picture-in-picture** and **full screen**.
 
 While the controls show, Instagram's own mute and tagged-people buttons in the bottom
-corners are hidden under them. On narrow videos the controls drop the time first, then
-settings, picture-in-picture and full screen, so nothing overlaps. The controls hide 2.5
-seconds after the pointer stops moving over the video.
+corners are hidden under them. On narrow videos the controls leave out the time, then
+settings, picture-in-picture and full screen. The controls hide 2.5 seconds after the
+pointer stops moving over the video.
 
-Only a video you can see gets the controls. A video hidden under a solid part of the page,
-like the home feed under a reel opened from it, gets none, and so does a video whose bottom
-edge is under a bar across the page.
-
-On stories the controls sit above the reply box and the like and share buttons, so those
-stay visible and clickable. The space between the controls and the reply box is the same
-as the space below the reply box.
+A video whose bottom edge is under a bar across the page gets no controls.
 
 ## Sound on by default
 
@@ -50,7 +42,7 @@ muted until you unmute or reload the page.
 
 ## Install in Chrome
 
-To install it from this repository, which takes about a minute:
+To install it from this repository:
 
 1. Download or copy this folder somewhere you will keep it.
 2. In Chrome, type `chrome://extensions` in the address bar and press Enter.
@@ -95,8 +87,7 @@ would show only once that ran out, which for a reel looping from a full buffer i
 `src/media-source-registry.js` runs before Instagram's scripts and records which
 `MediaSource` and `SourceBuffer`s back each video. After a quality change the controls
 remove the video buffered more than four seconds ahead of the playhead, and Instagram
-refetches it at the new quality. Keeping less than that, or also removing video behind
-the playhead, froze the picture for a few seconds and skipped footage in testing.
+refetches it at the new quality.
 
 All three scripts run only on `https://www.instagram.com/*`, and the extension needs no
 permissions.
@@ -110,7 +101,6 @@ permissions.
   open in a background tab, Instagram may treat new messages as seen, as it would if the
   tab were in front. Stories open in a background tab keep moving on to the next one, so
   Instagram may mark them as seen too.
-- Instagram can change its player code at any time, which may stop this working.
 
 ## Development
 
