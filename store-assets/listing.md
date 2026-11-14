@@ -59,4 +59,4 @@ Remote code: No, I am not using remote code.
 
 Data usage: tick none of the data types, then tick all three certifications.
 
-Privacy policy URL: https://github.com/brainage04/InstagramBackgroundPlayback/blob/master/PRIVACY.md
+Privacy policy URL: https://github.com/brainage04/BackgroundPlaybackForInstagram/blob/master/PRIVACY.md
