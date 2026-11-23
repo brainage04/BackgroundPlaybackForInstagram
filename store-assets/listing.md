@@ -8,27 +8,27 @@ Name: Background Playback for Instagram
 
 Summary (132 characters at most):
 
-> Keeps Instagram videos playing in background tabs, with sound on and full player controls.
+> Keeps Instagram videos playing in background tabs, with sound on by default and full player controls
 
 Description:
 
-> Instagram's website pauses a video as soon as you switch to another tab or click into
-> another window. It also starts every video muted and gives you no way to skip back or
-> forward. This extension fixes all three.
+> Instagram's website pauses videos as soon as you switch to another tab or click into
+> another window. It also starts every video muted and gives you no way to seek back or
+> forward. This extension fixes all three:
 >
-> - Videos keep playing, and you keep hearing them, while you use another tab or window.
-> - Videos play with sound. Chrome only allows that after your first click on the page, so
->   the first video stays muted until then. If you mute a video, videos stay muted until you
->   unmute or reload the page.
-> - Move the pointer over a video for player controls: a seek line, play and pause, the
->   time, volume, video quality, picture-in-picture and full screen.
+> - Videos keep playing (and you keep hearing them) while you use another tab or window
+> - Videos play with sound by default - Chrome only allows this after your first click or
+>   key press on the page, so the first video stays muted until then (and if you mute a
+>   video, videos stay muted until you unmute or reload the page)
+> - Hover over a video for player controls - a seek line, play/pause, time, volume, video
+>   quality, picture-in-picture, and full screen
 >
-> There are no settings. The extension asks only for access to www.instagram.com and never
-> sends anything anywhere.
+> There are no settings. The extension only asks for access to www.instagram.com and never
+> sends any data anywhere.
 >
-> Chrome itself pauses muted videos in background tabs, so turn the sound on before
-> switching away. Instagram can't tell the tab is in the background, so it may mark direct
-> messages and stories open in that tab as seen.
+> Note: Chrome itself pauses muted videos in background tabs, so make sure sound is on
+> before switching away. Because Instagram can't tell the tab is in the background, it may
+> also mark direct messages and stories open in that tab as seen.
 >
 > This extension is not made by or affiliated with Instagram or Meta.
 
@@ -47,13 +47,14 @@ Graphics:
 
 Single purpose:
 
-> Keeps Instagram videos playing when the tab is in the background, and adds sound and
-> player controls to those videos.
+> Keeps Instagram videos playing when the tab is in the background, with sound on by
+> default and player controls.
 
 Host permission justification, for the content scripts on `https://www.instagram.com/*`:
 
-> The scripts run on Instagram pages to stop Instagram pausing videos when the tab is in
-> the background, and to draw player controls over its videos. They run on no other site.
+> The content scripts run on https://www.instagram.com/* to stop Instagram pausing videos
+> in background tabs and to add player controls over its videos. They don't run on any
+> other site.
 
 Remote code: No, I am not using remote code.
 
