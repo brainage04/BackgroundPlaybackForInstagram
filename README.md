@@ -16,7 +16,7 @@ Hover over a video and the controls appear along its bottom edge:
 - **Settings** (gear) - **Video quality**, either Auto or one of the resolutions Instagram has for that video (only appears when there is more than one - a new choice shows within a few seconds, and on a looping reel the part already played before the change keeps the old resolution on later loops)
 - **Picture-in-picture** and **full screen**
 
-Outside stories, Instagram's own mute and tagged-people buttons in the bottom corners are hidden under the controls while they show. On a story the controls end above the reply box and nothing is hidden. On narrow videos the controls leave out the time, then settings, picture-in-picture and full screen. The controls hide 2.5 seconds after the pointer stops moving over the video, unless the quality menu is open or you are dragging the seek line or the volume.
+Outside stories, Instagram's own mute and tagged-people buttons in the bottom corners are hidden under the controls while they show. On a story the controls end above the reply box and nothing is hidden. On narrow videos the controls leave out the time, then settings, picture-in-picture and full screen. The controls hide 2.5 seconds after the pointer stops moving over the video, and stay while the pointer is over them, while you drag the seek line or the volume, or while the quality menu is open.
 
 A video whose bottom edge is under a bar across the page gets no controls.
 
