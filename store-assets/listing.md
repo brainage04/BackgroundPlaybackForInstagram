@@ -43,6 +43,10 @@ Graphics:
   `store-assets/screenshot-quality-1280x800.png`, `store-assets/screenshot-demo-1280x800.png`
 - Small promo tile: `store-assets/small-promo-tile-440x280.png`
 
+Homepage URL: https://github.com/brainage04/BackgroundPlaybackForInstagram
+
+Support URL: https://github.com/brainage04/BackgroundPlaybackForInstagram/issues
+
 ## Privacy practices tab
 
 Single purpose:
