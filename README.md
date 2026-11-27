@@ -28,12 +28,12 @@ Chrome only lets a page unmute a video after you click or press a key on it, so 
 
 ## Install in Chrome
 
-To install it from this repository:
+To install it by hand:
 
-1. Download or copy this folder somewhere you will keep it
+1. Download `instagram-background-playback-<version>.zip` from the [latest release](https://github.com/brainage04/BackgroundPlaybackForInstagram/releases/latest) and unzip it somewhere you will keep it, or clone this repository
 2. In Chrome, type `chrome://extensions` in the address bar and press Enter
 3. Turn on **Developer mode** with the switch in the top-right corner
-4. Click **Load unpacked** and pick this folder (or drag the folder onto the page)
+4. Click **Load unpacked** and pick the unzipped folder (or drag the folder onto the page)
 5. Reload any Instagram tab that is already open
 
 To remove it later, click **Remove** on the same page.
